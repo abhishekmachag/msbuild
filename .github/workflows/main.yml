@@ -44,7 +44,7 @@ jobs:
 
 
     - name: Compress Web Build artifact
-      run: Compress-Archive -Path "${{ env.WEB_BUILD_PATH }}" -DestinationPath "${{ env.WEB_BUILD_PATH }}.zip"
+      run: Compress-Archive -Path "${{ env.BUILD_PATH }}" -DestinationPath "${{ env.BUILD_PATH }}.zip"
 
 
     - name: Upload artifact
