@@ -1,0 +1,34 @@
+name: nuget cahce
+
+on:
+  # push:
+  #   branches:
+  #     - main
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: windows-2019
+    permissions:
+      packages: write
+      contents: read
+   
+    env:
+    #   BUILD_PATH: ${{ github.workspace }}\_build
+      NUGET_PACKAGES: ${{ github.workspace }}\.github\nuget-packages
+  
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1
+    
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1  
+      
+    - name: Clean solution
+      working-directory: ${{ github.workspace }}
+      run: msbuild /t:clean
+
+    - name: Clean NuGet cache
+      run: |
+        nuget locals all -clear
