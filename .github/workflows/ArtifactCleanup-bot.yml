@@ -1,0 +1,39 @@
+name: Artifact Cleanup
+
+on: workflow_dispatch
+  # push:
+  #   branches:
+  #     - main  # Change this to the branch you want to trigger on
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions: write-all
+
+    steps:
+      # - name: Checkout code
+      #   uses: actions/checkout@v3
+
+      - name: Keep Last 5 Artifacts
+        uses: actions/github-script@v6
+        id: artifact
+        with:
+          script: |
+            async function keepLast5Artifacts() {
+              const res = await github.rest.actions.listArtifactsForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              });
+              const artifacts = res.data.artifacts;
+              // Sort the artifacts by created_at in descending order
+              artifacts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+              const artifactsToDelete = artifacts.slice(2); // Get all but the last 5 artifacts
+              for (const artifact of artifactsToDelete) {
+                await github.rest.actions.deleteArtifact({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: artifact.id,
+                });
+              }  
+            }
+            await keepLast5Artifacts();
