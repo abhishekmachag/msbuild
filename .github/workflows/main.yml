@@ -1,9 +1,9 @@
 name: nuget cahce
 
 on:
-  # push:
-  #   branches:
-  #     - master
+  push:
+    branches:
+      - master
   workflow_dispatch:
 jobs:
   build:
@@ -41,3 +41,25 @@ jobs:
     - name: Build with msbuild
       working-directory: ${{ github.workspace }}
       run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true /p:PublishUrl="${{ env.BUILD_PATH }}" /p:VersionSuffix="${{ github.run_number }}"
+
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Bundle
+        path: "${{ env.BUILD_PATH }}"     
+
+    - run: Get-ChildItem
+    
+
+  # Deploy-to-IIS-Server:
+  
+  #   runs-on: Windows
+  #   needs: build
+
+  #   steps:
+  #   - name: Download artifact
+  #     uses: actions/download-artifact@v3
+  #     with:
+  #       name: Bundle
+  #       path: ${{ github.workspace }}/_build
