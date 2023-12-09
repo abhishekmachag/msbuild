@@ -7,14 +7,13 @@ on:
   workflow_dispatch:
 jobs:
   build:
-    runs-on: local
+    runs-on: windows-2019
     permissions:
       packages: write
       contents: read
    
     env:
       BUILD_PATH: ${{ github.workspace }}\_build
-      # NUGET_PACKAGES: ${{ github.workspace }}\.github\nuget-packages
   
     steps:
     - uses: actions/checkout@v3
@@ -30,8 +29,23 @@ jobs:
       run: msbuild /t:clean
 
     - name: Clean NuGet cache
-      run: |
+      run: | 
         nuget locals all -clear
+
+    - name: Set NuGet Packages Path
+      run: |
+        $env:nugetPackagesPath = Join-Path $env:USERPROFILE ".nuget\packages"
+        New-Item -Path $env:nugetPackagesPath -ItemType Directory -Force | Out-Null
+        Set-Location $env:nugetPackagesPath
+          
+    - name: Cache NuGet Packages
+      uses: actions/cache@v2
+      with:
+        path: $env:nugetPackagesPath
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget
+  
 
     - name: Restore NuGet packages with msbuild
       working-directory: ${{ github.workspace }}
@@ -44,7 +58,7 @@ jobs:
 
 
     - name: Compress Web Build artifact
-      run: Compress-Archive -Path "${{ env.BUILD_PATH }}" -DestinationPath "${{ env.BUILD_PATH }}.zip"
+      run: Compress-Archive -Path "${{ env.BUILD_PATH }}" -DestinationPath "${{ env.BUILD_PATH }}.zip" 
 
 
     - name: Upload artifact
@@ -53,17 +67,29 @@ jobs:
         name: Artifacts
         path: "${{ env.BUILD_PATH }}.zip"     
 
+
+    - name: Delete old artifacts
+      run: |
+        $artifactsPath = "${{ github.workspace }}\_build"
+        $latestArtifacts = Get-ChildItem -Path $artifactsPath | Sort-Object LastWriteTime -Descending | Select-Object -First 2
+        $oldArtifacts = Get-ChildItem -Path $artifactsPath | Where-Object { $_ -notin $latestArtifacts }
+        Remove-Item -Path $oldArtifacts.FullName -Force -Recurse
+
+
+
+
+
     - run: Get-ChildItem
     
 
-  # Deploy-to-IIS-Server:
+  Deploy-to-IIS-Server:
   
-  #   runs-on: Windows
-  #   needs: build
+    runs-on: local
+    needs: build
 
-  #   steps:
-  #   - name: Download artifact
-  #     uses: actions/download-artifact@v3
-  #     with:
-  #       name: Bundle
-  #       path: ${{ github.workspace }}/_build
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: Artifacts
+        path: ${{ github.workspace }}/_build
