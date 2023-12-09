@@ -1,104 +1,139 @@
-name: nuget cahce
+name: Artifact Cleanup
 
-on:
-  push:
-    branches:
-      - master
-  workflow_dispatch:
+on: workflow_dispatch
+  # push:
+  #   branches:
+  #     - main  # Change this to the branch you want to trigger on
+
 jobs:
-  build:
-    runs-on: windows-2019
-    permissions:
-      packages: write
-      contents: read
-   
-    env:
-      BUILD_PATH: ${{ github.workspace }}\_build
-  
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions: write-all
+
     steps:
-    - uses: actions/checkout@v3
+      # - name: Checkout code
+      #   uses: actions/checkout@v3
 
-    - name: Delete Artifacts
-      run: |
-        $token = "GH_TOKEN"
-        $apiUrl = "https://api.github.com/repos/abhishekmachag/msbuild/actions/artifacts"
-  
-        $artifacts = Invoke-RestMethod -Uri $apiUrl -Headers @{
-            Authorization = "Bearer $token"
-        }
-  
-        $artifacts = $artifacts | Sort-Object { [DateTime]::Parse($_.created_at) } -Descending
-        $artifactsToKeep = $artifacts | Select-Object -First 5
-  
-        foreach ($artifact in $artifacts) {
-            if ($artifactsToKeep -notcontains $artifact) {
-                Invoke-RestMethod -Uri "$apiUrl/$($artifact.id)" -Method Delete -Headers @{
-                    Authorization = "Bearer $token"
-                }
+      - name: Keep Last 5 Artifacts
+        uses: actions/github-script@v6
+        id: artifact
+        with:
+          script: |
+            async function keepLast5Artifacts() {
+              const res = await github.rest.actions.listArtifactsForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              });
+
+              const artifacts = res.data.artifacts;
+
+              // Sort the artifacts by created_at in descending order
+              artifacts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+              const artifactsToDelete = artifacts.slice(5); // Get all but the last 5 artifacts
+
+              for (const artifact of artifactsToDelete) {
+                await github.rest.actions.deleteArtifact({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: artifact.id,
+                });
+              }  
             }
-        }
 
-  #   - name: Setup MSBuild
-  #     uses: microsoft/setup-msbuild@v1
+            await keepLast5Artifacts();
+
+      # - name: Commit and push changes (optional)
+      #   run: |
+      #     git config --global user.name "GitHub Actions"
+      #     git config --global user.email "actions@github.com"
+      #     git commit -m "Cleanup artifacts" -a
+      #     git push
+
+
+
+
+# name: nuget cahce
+
+# on:
+#   push:
+#     branches:
+#       - master
+#   workflow_dispatch:
+# jobs:
+#   build:
+#     runs-on: windows-2019
+#     permissions:
+#       packages: write
+#       contents: read
+   
+#     env:
+#       BUILD_PATH: ${{ github.workspace }}\_build
+  
+#     steps:
+#     - uses: actions/checkout@v3
+
+#     - name: Setup MSBuild
+#       uses: microsoft/setup-msbuild@v1
     
-  #   - name: Setup NuGet
-  #     uses: NuGet/setup-nuget@v1  
+#     - name: Setup NuGet
+#       uses: NuGet/setup-nuget@v1  
       
-  #   - name: Clean solution
-  #     working-directory: ${{ github.workspace }}
-  #     run: msbuild /t:clean
+#     - name: Clean solution
+#       working-directory: ${{ github.workspace }}
+#       run: msbuild /t:clean
 
-  #   - name: Clean NuGet cache
-  #     run: | 
-  #       nuget locals all -clear
+#     - name: Clean NuGet cache
+#       run: | 
+#         nuget locals all -clear
 
-  #   - name: Set NuGet Packages Path
-  #     run: |
-  #       $env:nugetPackagesPath = Join-Path $env:USERPROFILE ".nuget\packages"
-  #       New-Item -Path $env:nugetPackagesPath -ItemType Directory -Force | Out-Null
-  #       Set-Location $env:nugetPackagesPath
+#     - name: Set NuGet Packages Path
+#       run: |
+#         $env:nugetPackagesPath = Join-Path $env:USERPROFILE ".nuget\packages"
+#         New-Item -Path $env:nugetPackagesPath -ItemType Directory -Force | Out-Null
+#         Set-Location $env:nugetPackagesPath
           
-  #   - name: Cache NuGet Packages
-  #     uses: actions/cache@v2
-  #     with:
-  #       path: $env:nugetPackagesPath
-  #       key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-  #       restore-keys: |
-  #         ${{ runner.os }}-nuget
+#     - name: Cache NuGet Packages
+#       uses: actions/cache@v2
+#       with:
+#         path: $env:nugetPackagesPath
+#         key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+#         restore-keys: |
+#           ${{ runner.os }}-nuget
   
 
-  #   - name: Restore NuGet packages with msbuild
-  #     working-directory: ${{ github.workspace }}
-  #     run: nuget restore EFContextMock.sln
+#     - name: Restore NuGet packages with msbuild
+#       working-directory: ${{ github.workspace }}
+#       run: nuget restore EFContextMock.sln
     
       
-  #   - name: Build with msbuild
-  #     working-directory: ${{ github.workspace }}
-  #     run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true /p:PublishProfile=Publish /p:PublishUrl="${{ env.BUILD_PATH }}" /p:VersionSuffix="${{ github.run_number }}"
+#     - name: Build with msbuild
+#       working-directory: ${{ github.workspace }}
+#       run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true /p:PublishProfile=Publish /p:PublishUrl="${{ env.BUILD_PATH }}" /p:VersionSuffix="${{ github.run_number }}"
 
 
-  #   - name: Compress Web Build artifact
-  #     run: Compress-Archive -Path "${{ env.BUILD_PATH }}" -DestinationPath "${{ env.BUILD_PATH }}.zip" 
+#     - name: Compress Web Build artifact
+#       run: Compress-Archive -Path "${{ env.BUILD_PATH }}" -DestinationPath "${{ env.BUILD_PATH }}.zip" 
 
 
-  #   - name: Upload artifact
-  #     uses: actions/upload-artifact@v3
-  #     with:
-  #       name: Artifacts
-  #       path: "${{ env.BUILD_PATH }}.zip"     
+#     - name: Upload artifact
+#       uses: actions/upload-artifact@v3
+#       with:
+#         name: Artifacts
+#         path: "${{ env.BUILD_PATH }}.zip"     
 
 
-  #   - run: Get-ChildItem
+#     - run: Get-ChildItem
     
 
-  # Deploy-to-IIS-Server:
+#   Deploy-to-IIS-Server:
   
-  #   runs-on: local
-  #   needs: build
+#     runs-on: local
+#     needs: build
 
-  #   steps:
-  #   - name: Download artifact
-  #     uses: actions/download-artifact@v3
-  #     with:
-  #       name: Artifacts
-  #       path: ${{ github.workspace }}/_build
+#     steps:
+#     - name: Download artifact
+#       uses: actions/download-artifact@v3
+#       with:
+#         name: Artifacts
+#         path: ${{ github.workspace }}/_build
