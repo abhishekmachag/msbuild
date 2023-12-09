@@ -43,11 +43,15 @@ jobs:
       run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true /p:PublishUrl="${{ env.BUILD_PATH }}" /p:VersionSuffix="${{ github.run_number }}"
 
 
+    - name: Compress Web Build artifact
+      run: Compress-Archive -Path "${{ env.WEB_BUILD_PATH }}" -DestinationPath "${{ env.WEB_BUILD_PATH }}.zip"
+
+
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: Bundle
-        path: "${{ env.BUILD_PATH }}"     
+        name: Artifacts
+        path: "${{ env.BUILD_PATH }}.zip"     
 
     - run: Get-ChildItem
     
