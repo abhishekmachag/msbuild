@@ -17,79 +17,86 @@ jobs:
   
     steps:
     - uses: actions/checkout@v3
-    
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v1
-    
-    - name: Setup NuGet
-      uses: NuGet/setup-nuget@v1  
-      
-    - name: Clean solution
-      working-directory: ${{ github.workspace }}
-      run: msbuild /t:clean
 
-    - name: Clean NuGet cache
-      run: | 
-        nuget locals all -clear
-
-    - name: Set NuGet Packages Path
+    - name: Clean Artifacts
       run: |
-        $env:nugetPackagesPath = Join-Path $env:USERPROFILE ".nuget\packages"
-        New-Item -Path $env:nugetPackagesPath -ItemType Directory -Force | Out-Null
-        Set-Location $env:nugetPackagesPath
+        $apiUrl = "https://api.github.com/repos/abhishekmachag/msbuild/actions/artifacts"
+        $artifacts = Invoke-RestMethod -Uri $apiUrl -Headers @{
+            Authorization = "Bearer $env:GH_TOKEN"
+        }
+
+        $artifacts = $artifacts | Sort-Object { [DateTime]::Parse($_.created_at) } -Descending
+        $artifactsToKeep = $artifacts | Select-Object -First 2
+
+        foreach ($artifact in $artifacts) {
+            if ($artifactsToKeep -notcontains $artifact) {
+                Invoke-RestMethod -Uri "$apiUrl/$($artifact.id)" -Method Delete -Headers @{
+                    Authorization = "Bearer $env:GH_TOKEN"
+                }
+            }
+        }
+    
+  #   - name: Setup MSBuild
+  #     uses: microsoft/setup-msbuild@v1
+    
+  #   - name: Setup NuGet
+  #     uses: NuGet/setup-nuget@v1  
+      
+  #   - name: Clean solution
+  #     working-directory: ${{ github.workspace }}
+  #     run: msbuild /t:clean
+
+  #   - name: Clean NuGet cache
+  #     run: | 
+  #       nuget locals all -clear
+
+  #   - name: Set NuGet Packages Path
+  #     run: |
+  #       $env:nugetPackagesPath = Join-Path $env:USERPROFILE ".nuget\packages"
+  #       New-Item -Path $env:nugetPackagesPath -ItemType Directory -Force | Out-Null
+  #       Set-Location $env:nugetPackagesPath
           
-    - name: Cache NuGet Packages
-      uses: actions/cache@v2
-      with:
-        path: $env:nugetPackagesPath
-        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-        restore-keys: |
-          ${{ runner.os }}-nuget
+  #   - name: Cache NuGet Packages
+  #     uses: actions/cache@v2
+  #     with:
+  #       path: $env:nugetPackagesPath
+  #       key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+  #       restore-keys: |
+  #         ${{ runner.os }}-nuget
   
 
-    - name: Restore NuGet packages with msbuild
-      working-directory: ${{ github.workspace }}
-      run: nuget restore EFContextMock.sln
+  #   - name: Restore NuGet packages with msbuild
+  #     working-directory: ${{ github.workspace }}
+  #     run: nuget restore EFContextMock.sln
     
       
-    - name: Build with msbuild
-      working-directory: ${{ github.workspace }}
-      run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true /p:PublishProfile=Publish /p:PublishUrl="${{ env.BUILD_PATH }}" /p:VersionSuffix="${{ github.run_number }}"
+  #   - name: Build with msbuild
+  #     working-directory: ${{ github.workspace }}
+  #     run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true /p:PublishProfile=Publish /p:PublishUrl="${{ env.BUILD_PATH }}" /p:VersionSuffix="${{ github.run_number }}"
 
 
-    - name: Compress Web Build artifact
-      run: Compress-Archive -Path "${{ env.BUILD_PATH }}" -DestinationPath "${{ env.BUILD_PATH }}.zip" 
+  #   - name: Compress Web Build artifact
+  #     run: Compress-Archive -Path "${{ env.BUILD_PATH }}" -DestinationPath "${{ env.BUILD_PATH }}.zip" 
 
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: Artifacts
-        path: "${{ env.BUILD_PATH }}.zip"     
+  #   - name: Upload artifact
+  #     uses: actions/upload-artifact@v3
+  #     with:
+  #       name: Artifacts
+  #       path: "${{ env.BUILD_PATH }}.zip"     
 
 
-    - name: Delete old artifacts
-      run: |
-        $artifactsPath = "${{ github.workspace }}\_build"
-        $latestArtifacts = Get-ChildItem -Path $artifactsPath | Sort-Object LastWriteTime -Descending | Select-Object -First 2
-        $oldArtifacts = Get-ChildItem -Path $artifactsPath | Where-Object { $_ -notin $latestArtifacts }
-        Remove-Item -Path $oldArtifacts.FullName -Force -Recurse
-
-
-
-
-
-    - run: Get-ChildItem
+  #   - run: Get-ChildItem
     
 
-  Deploy-to-IIS-Server:
+  # Deploy-to-IIS-Server:
   
-    runs-on: local
-    needs: build
+  #   runs-on: local
+  #   needs: build
 
-    steps:
-    - name: Download artifact
-      uses: actions/download-artifact@v3
-      with:
-        name: Artifacts
-        path: ${{ github.workspace }}/_build
+  #   steps:
+  #   - name: Download artifact
+  #     uses: actions/download-artifact@v3
+  #     with:
+  #       name: Artifacts
+  #       path: ${{ github.workspace }}/_build
