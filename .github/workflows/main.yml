@@ -3,7 +3,7 @@ name: nuget cahce
 on:
   # push:
   #   branches:
-  #     - main
+  #     - master
   workflow_dispatch:
 jobs:
   build:
@@ -13,8 +13,8 @@ jobs:
       contents: read
    
     env:
-    #   BUILD_PATH: ${{ github.workspace }}\_build
-      NUGET_PACKAGES: ${{ github.workspace }}\.github\nuget-packages
+      BUILD_PATH: ${{ github.workspace }}\_build
+      # NUGET_PACKAGES: ${{ github.workspace }}\.github\nuget-packages
   
     steps:
     - uses: actions/checkout@v3
@@ -32,3 +32,12 @@ jobs:
     - name: Clean NuGet cache
       run: |
         nuget locals all -clear
+
+    - name: Restore NuGet packages with msbuild
+      working-directory: ${{ github.workspace }}
+      run: nuget restore EFContextMock.sln
+    
+      
+    - name: Build with msbuild
+      working-directory: ${{ github.workspace }}
+      run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true /p:PublishUrl="${{ env.BUILD_PATH }}" /p:VersionSuffix="${{ github.run_number }}"
