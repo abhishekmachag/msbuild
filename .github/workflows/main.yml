@@ -30,7 +30,7 @@ jobs:
               // Sort the artifacts by created_at in descending order
               artifacts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-              const artifactsToDelete = artifacts.slice(5); // Get all but the last 5 artifacts
+              const artifactsToDelete = artifacts.slice(2); // Get all but the last 5 artifacts
 
               for (const artifact of artifactsToDelete) {
                 await github.rest.actions.deleteArtifact({
