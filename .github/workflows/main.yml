@@ -18,24 +18,26 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Clean Artifacts
+    - name: Delete Artifacts
       run: |
+        $token = "GH_TOKEN"
         $apiUrl = "https://api.github.com/repos/abhishekmachag/msbuild/actions/artifacts"
+  
         $artifacts = Invoke-RestMethod -Uri $apiUrl -Headers @{
-            Authorization = "Bearer $env:GH_TOKEN"
+            Authorization = "Bearer $token"
         }
-
+  
         $artifacts = $artifacts | Sort-Object { [DateTime]::Parse($_.created_at) } -Descending
-        $artifactsToKeep = $artifacts | Select-Object -First 2
-
+        $artifactsToKeep = $artifacts | Select-Object -First 5
+  
         foreach ($artifact in $artifacts) {
             if ($artifactsToKeep -notcontains $artifact) {
                 Invoke-RestMethod -Uri "$apiUrl/$($artifact.id)" -Method Delete -Headers @{
-                    Authorization = "Bearer $env:GH_TOKEN"
+                    Authorization = "Bearer $token"
                 }
             }
         }
-    
+
   #   - name: Setup MSBuild
   #     uses: microsoft/setup-msbuild@v1
     
