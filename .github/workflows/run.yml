@@ -2,6 +2,7 @@
 name: resusable-workflow-ubuntu
 
 on:
+
   workflow_call:
   workflow_dispatch:
 jobs:
@@ -99,7 +100,6 @@ jobs:
         -SkipCACheck `
         -SkipCNCheck `
         -SkipRevocationCheck
-
         $psSession = @{
           ComputerName = $ipAddress
           UseSSL = $true
