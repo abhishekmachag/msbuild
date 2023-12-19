@@ -17,7 +17,7 @@ jobs:
     - name: Checkout First1 Repository
       uses: actions/checkout@v3
       with:
-        repository: abhishekmachag/msbuild1
+        repository: abhishekmachag/msbuild
         ref: master
         path: ${{ github.workspace }}/msbuild
         # token: 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
