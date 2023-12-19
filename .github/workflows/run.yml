@@ -82,23 +82,15 @@ jobs:
 # Set the connection details
     - name: Connect to Windows VM
       run: |
-        # Set the connection details
-        $serverAddress = "54.211.214.142"
-        $username = "Administrator"
-        $password = "h1B4odr.h&XV3tGn.l=&5CSmwP5Y(jFb"
+        # # Set the connection details
+        # $serverAddress = "54.211.214.142"
+        # $username = "Administrator"
+        # $password = "h1B4odr.h&XV3tGn.l=&5CSmwP5Y(jFb"
 
-        # Create a PSCredential object
-        $securePassword = ConvertTo-SecureString $password -AsPlainText -Force
-        $credentials = New-Object System.Management.Automation.PSCredential ($username, $securePassword)
+        $myUserName = "Administrator"
+        $myPlainTextPassword = "h1B4odr.h&XV3tGn.l=&5CSmwP5Y(jFb"
+        $myPassword = $MyPlainTextPassword | ConvertTo-SecureString -AsPlainText -Force
+        $credential = New-Object System.Management.Automation.PSCredential($MyUserName, $myPassword)
 
-        # Use PowerShell Remoting to connect to the Windows VM
-        $session = New-PSSession -ComputerName $serverAddress -Credential $credentials -Authentication Negotiate -ErrorAction Stop
-
-        # Run remote PowerShell commands or scripts
-        Invoke-Command -Session $session -ScriptBlock {
-            # Your remote PowerShell commands go here
-            Get-Process
-        }
-
-        # Close the PowerShell Remoting session
-        Remove-PSSession $session
+        $networkCredential = $credential.GetNetworkCredential()
+        $networkCredential | Select-Object UserName, Password
