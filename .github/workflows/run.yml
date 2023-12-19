@@ -84,36 +84,21 @@ jobs:
 # Set the connection details
     - name: Connect to Windows VM
       run: |
-          # Specify the username, password, and IP address directly
-          $username = "Administrator"
-          $password = ConvertTo-SecureString -String "h1B4odr.h&XV3tGn.l=&5CSmwP5Y(jFb" -AsPlainText -Force
-          $cred = New-Object System.Management.Automation.PSCredential -ArgumentList $username, $password
-          
-          # Specify the IP address directly
-          $computers = "54.211.214.142"
-          
-          # Convert the comma-separated string into an array of computer names
-          $computerArray = $computers -split ','
-          
-          foreach ($comp in $computerArray) {
-              # Use Invoke-Command to run commands on the remote machine
-              Invoke-Command -ComputerName $comp -Credential $cred -ScriptBlock {
-                  # Enable WINRM Quickconfig
-                  cmd /c winrm.cmd quickconfig -q
-          
-                  Write-Host "Enabling WINRM Quickconfig" -ForegroundColor Green
-                  Write-Host "Waiting for 60 Seconds......." -ForegroundColor Yellow
-                  Start-Sleep -Seconds 60 -Verbose
-          
-                  # Enable PSRemoting
-                  Enable-PSRemoting -Force
-                  Write-Host "Enabling PSRemoting" -ForegroundColor Green
-          
-                  # Set Execution Policy
-                  Set-ExecutionPolicy RemoteSigned -Force
-                  Write-Host "Enabling Execution Policy" -ForegroundColor Green
-          
-                  # Test WSMan
-                  Test-Wsman
-              }
-          }
+        $myUserName = "Administrator"
+        $myPlainTextPassword = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)"
+        $myPassword = $MyPlainTextPassword | ConvertTo-SecureString -AsPlainText -Force
+        $credential = New-Object System.Management.Automation.PSCredential($MyUserName, $myPassword)
+        $networkCredential = $credential.GetNetworkCredential()
+        $networkCredential | Select-Object UserName, Password
+        $ipAddress = "34.244.15.14"
+        $sessionOption = New-PSSessionOption `
+        -SkipCACheck `
+        -SkipCNCheck `
+        -SkipRevocationCheck
+        $psSession = @{
+          ComputerName = $ipAddress
+          UseSSL = $true
+          Credential = $credential
+          SessionOption = $sessionOption
+        }
+        Enter-PSSession @psSession
