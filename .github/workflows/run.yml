@@ -56,7 +56,7 @@ jobs:
 
 
   deploy:
-    runs-on: windows-2019
+    runs-on: local
     # needs: build
     steps:
       # - name: Download artifact
