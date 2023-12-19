@@ -94,3 +94,18 @@ jobs:
 
         $networkCredential = $credential.GetNetworkCredential()
         $networkCredential | Select-Object UserName, Password
+        $ipAddress = "54.211.214.142"
+        $sessionOption = New-PSSessionOption `
+        -SkipCACheck `
+        -SkipCNCheck `
+        -SkipRevocationCheck
+
+        $psSession = @{
+          ComputerName = $ipAddress
+          UseSSL = $true
+          Credential = $credential
+          SessionOption = $sessionOption
+        }
+        Enter-PSSession @psSession
+
+
