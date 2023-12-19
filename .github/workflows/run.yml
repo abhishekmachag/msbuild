@@ -5,49 +5,100 @@ on:
   workflow_call:
   workflow_dispatch:
 jobs:
-  build:
-    runs-on: windows-2019
-    # permissions:
-    #   packages: write
-    #   contents: read
-    # if: ${{ github.event.inputs.environment == 'dev' }}
-    env:
-      BUILD_PATH: ${{ github.workspace }}\_build
-    steps:
-    - name: Checkout First1 Repository
-      uses: actions/checkout@v3
-      with:
-        repository: abhishekmachag/msbuild
-        ref: master
-        path: ${{ github.workspace }}/msbuild
-        # token: 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
+  # build:
+  #   runs-on: windows-2019
+  #   # permissions:
+  #   #   packages: write
+  #   #   contents: read
+  #   # if: ${{ github.event.inputs.environment == 'dev' }}
+  #   env:
+  #     BUILD_PATH: ${{ github.workspace }}\_build
+  #   steps:
+    # - name: Checkout First1 Repository
+    #   uses: actions/checkout@v3
+    #   with:
+    #     repository: abhishekmachag/msbuild
+    #     ref: master
+    #     path: ${{ github.workspace }}/msbuild
+    #     # token: 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
  
-    - run: Get-ChildItem
+    # - run: Get-ChildItem
 
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v1
+    # - name: Setup MSBuild
+    #   uses: microsoft/setup-msbuild@v1
     
-    - name: Setup NuGet
-      uses: NuGet/setup-nuget@v1  
+    # - name: Setup NuGet
+    #   uses: NuGet/setup-nuget@v1  
   
   
 
-    - name: Restore NuGet packages with msbuild
-      working-directory: ${{ github.workspace }}\msbuild
-      run: nuget restore EFContextMock.sln
+    # - name: Restore NuGet packages with msbuild
+    #   working-directory: ${{ github.workspace }}\msbuild
+    #   run: nuget restore EFContextMock.sln
     
       
-    - name: Build with msbuild
-      working-directory: ${{ github.workspace }}\msbuild
-      run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true /p:PublishProfile=Publish /p:PublishUrl="${{ env.BUILD_PATH }}" /p:VersionSuffix="${{ github.run_number }}" /p:IsPackaging=true
+    # - name: Build with msbuild
+    #   working-directory: ${{ github.workspace }}\msbuild
+    #   run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true /p:PublishProfile=Publish /p:PublishUrl="${{ env.BUILD_PATH }}" /p:VersionSuffix="${{ github.run_number }}" /p:IsPackaging=true
 
 
-    - name: Compress Web Build artifact
-      run: Compress-Archive -Path "${{ env.BUILD_PATH }}" -DestinationPath "${{ env.BUILD_PATH }}.zip" 
+    # - name: Compress Web Build artifact
+    #   run: Compress-Archive -Path "${{ env.BUILD_PATH }}" -DestinationPath "${{ env.BUILD_PATH }}.zip" 
 
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: Artifacts
-        path: "${{ env.BUILD_PATH }}.zip"    
+    # - name: Upload artifact
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: Artifacts
+    #     path: "${{ env.BUILD_PATH }}.zip"    
+
+
+  deploy:
+    runs-on: windows-2019
+    # needs: build
+    steps:
+      # - name: Download artifact
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: Artifacts
+      #     path: ${{ github.workspace }}/_build
+
+    # - name: Connect to Windows Server
+    #   run: |
+    #     # Set the server connection details
+    #     $serverAddress = "your-windows-server-ip"
+    #     $username = "Administrator"
+    #     $password = "your-password"
+    #     $destinationPath = "C:\Path\To\Copy"
+
+    #     # Create a PSCredential object
+    #     $securePassword = ConvertTo-SecureString $password -AsPlainText -Force
+    #     $credentials = New-Object System.Management.Automation.PSCredential ($username, $securePassword)
+
+    #     # Copy files to the Windows server using PowerShell Remoting
+    #     New-PSSession -ComputerName $serverAddress -Credential $credentials -SessionOption (New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck) -Name "RemoteSession" -ErrorAction Stop
+    #     Copy-Item -Path "${{ github.workspace }}/downloaded-artifact/*" -Destination "\\$serverAddress\$destinationPath" -Recurse -ToSession (Get-PSSession -Name "RemoteSession")
+    #     Remove-PSSession -Name "RemoteSession"
+# Set the connection details
+    - name: Connect to Windows VM
+      run: |
+        # Set the connection details
+        $serverAddress = "54.211.214.142"
+        $username = "Administrator"
+        $password = "h1B4odr.h&XV3tGn.l=&5CSmwP5Y(jFb"
+
+        # Create a PSCredential object
+        $securePassword = ConvertTo-SecureString $password -AsPlainText -Force
+        $credentials = New-Object System.Management.Automation.PSCredential ($username, $securePassword)
+
+        # Use PowerShell Remoting to connect to the Windows VM
+        $session = New-PSSession -ComputerName $serverAddress -Credential $credentials -Authentication Negotiate -ErrorAction Stop
+
+        # Run remote PowerShell commands or scripts
+        Invoke-Command -Session $session -ScriptBlock {
+            # Your remote PowerShell commands go here
+            Get-Process
+        }
+
+        # Close the PowerShell Remoting session
+        Remove-PSSession $session
