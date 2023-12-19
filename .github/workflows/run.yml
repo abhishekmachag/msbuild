@@ -1,0 +1,53 @@
+
+name: resusable-workflow-ubuntu
+
+on:
+  workflow_call:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: windows-2019
+    # permissions:
+    #   packages: write
+    #   contents: read
+    # if: ${{ github.event.inputs.environment == 'dev' }}
+    env:
+      BUILD_PATH: ${{ github.workspace }}\_build
+    steps:
+    - name: Checkout First1 Repository
+      uses: actions/checkout@v3
+      with:
+        repository: abhishekmachag/msbuild1
+        ref: master
+        path: ${{ github.workspace }}/msbuild
+        # token: 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
+ 
+    - run: Get-ChildItem
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1
+    
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1  
+  
+  
+
+    - name: Restore NuGet packages with msbuild
+      working-directory: ${{ github.workspace }}\msbuild
+      run: nuget restore EFContextMock.sln
+    
+      
+    - name: Build with msbuild
+      working-directory: ${{ github.workspace }}\msbuild
+      run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true /p:PublishProfile=Publish /p:PublishUrl="${{ env.BUILD_PATH }}" /p:VersionSuffix="${{ github.run_number }}" /p:IsPackaging=true
+
+
+    - name: Compress Web Build artifact
+      run: Compress-Archive -Path "${{ env.BUILD_PATH }}" -DestinationPath "${{ env.BUILD_PATH }}.zip" 
+
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Artifacts
+        path: "${{ env.BUILD_PATH }}.zip"    
