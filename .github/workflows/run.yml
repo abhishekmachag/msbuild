@@ -60,7 +60,7 @@ jobs:
           
       - run: whoami
       - run: hostname
-      - name: Run PowerShell Script
+      - name: PowerShell Session to Copy Build
         # shell: powershell
         run: |
               Enable-PSRemoting -Force
@@ -73,8 +73,11 @@ jobs:
               $psSession = New-PSSession -ComputerName 34.244.15.14 -Credential $credential
               Copy-Item "${{ github.workspace }}/build" -Destination "C:\" -ToSession $psSession -Recurse -Force
               Exit-PSSession
+
+      - name: Remove temporary files
+        run: Remove-Item -Path ${{ github.workspace }}/build -Recurse -Force
               
-      - name: Remove PowerShell build
+      - name: Deploying tthe Build Artifacts to Root Directory
         run: |
           $username = "Administrator"
           $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)" | ConvertTo-SecureString -AsPlainText -Force
