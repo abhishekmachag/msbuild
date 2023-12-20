@@ -14,7 +14,7 @@ jobs:
       shell: powershell
       run: |
         $username = "Administrator"
-        $password = "YourAdminPassword" | ConvertTo-SecureString -AsPlainText -Force
+        $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)" | ConvertTo-SecureString -AsPlainText -Force
         $credential = New-Object System.Management.Automation.PSCredential($username, $password)
 
         $scriptBlock = {hostname}
