@@ -84,21 +84,25 @@ jobs:
 # Set the connection details
     - name: Connect to Windows VM
       run: |
-        $myUserName = "Administrator"
-        $myPlainTextPassword = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)"
-        $myPassword = $MyPlainTextPassword | ConvertTo-SecureString -AsPlainText -Force
-        $credential = New-Object System.Management.Automation.PSCredential($MyUserName, $myPassword)
-        $networkCredential = $credential.GetNetworkCredential()
-        $networkCredential | Select-Object UserName, Password
-        $ipAddress = "34.244.15.14"
-        $sessionOption = New-PSSessionOption `
-        -SkipCACheck `
-        -SkipCNCheck `
-        -SkipRevocationCheck
-        $psSession = @{
-          ComputerName = $ipAddress
-          UseSSL = $true
-          Credential = $credential
-          SessionOption = $sessionOption
-        }
-        Enter-PSSession @psSession
+          $username = "Administrator"
+          $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)" | ConvertTo-SecureString -AsPlainText -Force
+          $credential = New-Object System.Management.Automation.PSCredential($username, $password)
+          Enter-PSSession -ComputerName 34.244.15.14 -Credential $credential  
+        # $myUserName = "Administrator"
+        # $myPlainTextPassword = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)"
+        # $myPassword = $MyPlainTextPassword | ConvertTo-SecureString -AsPlainText -Force
+        # $credential = New-Object System.Management.Automation.PSCredential($MyUserName, $myPassword)
+        # $networkCredential = $credential.GetNetworkCredential()
+        # $networkCredential | Select-Object UserName, Password
+        # $ipAddress = "34.244.15.14"
+        # $sessionOption = New-PSSessionOption `
+        # -SkipCACheck `
+        # -SkipCNCheck `
+        # -SkipRevocationCheck
+        # $psSession = @{
+        #   ComputerName = $ipAddress
+        #   UseSSL = $true
+        #   Credential = $credential
+        #   SessionOption = $sessionOption
+        # }
+        # Enter-PSSession @psSession
