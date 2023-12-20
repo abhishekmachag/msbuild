@@ -53,8 +53,10 @@ jobs:
         with:
           name: Artifacts
           path: ${{ github.workspace }}/build
-      - run: whoami
-      - run: hostname
+
+      - name: Expand Build artifact
+        run: Expand-Archive -Path "${{ github.workspace }}\build\_build.zip" -DestinationPath "${{ github.workspace }}\build" -Force
+        
       - name: PowerShell Session to Copy Build
         run: |
               Enable-PSRemoting -Force
@@ -64,134 +66,34 @@ jobs:
               $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)"
               $securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
               $credential = New-Object System.Management.Automation.PSCredential($username, $securePassword)
+              Invoke-Command -ComputerName 34.244.15.14 -Credential $credential -ScriptBlock {Remove-Item -Path "C:\temp\*" -Recurse -Force}
               $psSession = New-PSSession -ComputerName 34.244.15.14 -Credential $credential
-              Copy-Item "${{ github.workspace }}/build" -Destination "C:\" -ToSession $psSession -Recurse -Force
+              Copy-Item "${{ github.workspace }}/build/_build/*" -Destination "C:\temp" -ToSession $psSession -Recurse -Force
               Exit-PSSession
 
       - name: Remove temporary files
         run: Remove-Item -Path ${{ github.workspace }}/build -Recurse -Force
               
-      - name: Deploying tthe Build Artifacts to Root Directory
-        run: |
-          $username = "Administrator"
-          $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)" | ConvertTo-SecureString -AsPlainText -Force
-          $credential = New-Object System.Management.Automation.PSCredential($username, $password)
+      # - name: Deploying tthe Build Artifacts to Root Directory
+      #   run: |
+      #     $username = "Administrator"
+      #     $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)" | ConvertTo-SecureString -AsPlainText -Force
+      #     $credential = New-Object System.Management.Automation.PSCredential($username, $password)
   
-          # Perform actions in the remote session
-          Invoke-Command -ComputerName 34.244.15.14 -Credential $credential -ScriptBlock {
-              Expand-Archive -Path "C:\build\_build.zip" -DestinationPath "C:\build" -Force
-              Remove-Item -Path "C:\temp\*" -Recurse -Force
-              Copy-Item -Path "C:\build\_build\*" -Destination C:\temp -Recurse -Force
-              Remove-Item -Path "C:\build" -Recurse -Force
-          }
+      #     # Perform actions in the remote session
+      #     Invoke-Command -ComputerName 34.244.15.14 -Credential $credential -ScriptBlock {
+      #         Remove-Item -Path "C:\temp\*" -Recurse -Force
+      #     }
 
           
-# name: resusable-workflow-ubuntu
+      # - name: Expand WebAPI Build artifact
+      #   run: Expand-Archive -Path "${{ github.workspace }}\_webapi_build\WebApiBuild.zip" -DestinationPath "${{ github.workspace }}\_webapi_build" -Force
 
-# on:
-#   push:
-#     branches: ["master"]
-#   workflow_call:
-#   workflow_dispatch:
-# jobs:
-  # build:
-  #   runs-on: windows-2019
-  #   # permissions:
-  #   #   packages: write
-  #   #   contents: read
-  #   # if: ${{ github.event.inputs.environment == 'dev' }}
-  #   env:
-  #     BUILD_PATH: ${{ github.workspace }}\_build
-  #   steps:
-    # - name: Checkout First1 Repository
-    #   uses: actions/checkout@v3
-    #   with:
-    #     repository: abhishekmachag/msbuild
-    #     ref: master
-    #     path: ${{ github.workspace }}/msbuild
-    #     # token: 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
- 
-    # - run: Get-ChildItem
+      # - name: Remove existing files for WebAPI
+      #   run: Remove-Item -Path "C:\inetpub\wwwroot\bundle3\*" -Recurse -Force
 
-    # - name: Setup MSBuild
-    #   uses: microsoft/setup-msbuild@v1
-    
-    # - name: Setup NuGet
-    #   uses: NuGet/setup-nuget@v1  
-  
-  
+      # - name: Copy new files for WebAPI
+      #   run: Copy-Item -Path "${{ github.workspace }}\_webapi_build\WebApiBuild\*" -Destination C:\inetpub\wwwroot\bundle3 -Recurse -Force
 
-    # - name: Restore NuGet packages with msbuild
-    #   working-directory: ${{ github.workspace }}\msbuild
-    #   run: nuget restore EFContextMock.sln
-    
-      
-    # - name: Build with msbuild
-    #   working-directory: ${{ github.workspace }}\msbuild
-    #   run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true /p:PublishProfile=Publish /p:PublishUrl="${{ env.BUILD_PATH }}" /p:VersionSuffix="${{ github.run_number }}" /p:IsPackaging=true
-
-
-    # - name: Compress Web Build artifact
-    #   run: Compress-Archive -Path "${{ env.BUILD_PATH }}" -DestinationPath "${{ env.BUILD_PATH }}.zip" 
-
-
-    # - name: Upload artifact
-    #   uses: actions/upload-artifact@v3
-    #   with:
-    #     name: Artifacts
-    #     path: "${{ env.BUILD_PATH }}.zip"    
-
-
-  # deploy:
-  #   runs-on: local
-  #   # needs: build
-  #   steps:
-    
-      # - name: Download artifact
-      #   uses: actions/download-artifact@v3
-      #   with:
-      #     name: Artifacts
-      #     path: ${{ github.workspace }}/_build
-
-    # - name: Connect to Windows Server
-    #   run: |
-    #     # Set the server connection details
-    #     $serverAddress = "your-windows-server-ip"
-    #     $username = "Administrator"
-    #     $password = "your-password"
-    #     $destinationPath = "C:\Path\To\Copy"
-
-    #     # Create a PSCredential object
-    #     $securePassword = ConvertTo-SecureString $password -AsPlainText -Force
-    #     $credentials = New-Object System.Management.Automation.PSCredential ($username, $securePassword)
-
-    #     # Copy files to the Windows server using PowerShell Remoting
-    #     New-PSSession -ComputerName $serverAddress -Credential $credentials -SessionOption (New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck) -Name "RemoteSession" -ErrorAction Stop
-    #     Copy-Item -Path "${{ github.workspace }}/downloaded-artifact/*" -Destination "\\$serverAddress\$destinationPath" -Recurse -ToSession (Get-PSSession -Name "RemoteSession")
-    #     Remove-PSSession -Name "RemoteSession"
-# Set the connection details
-    # - run: whoami
-    # - name: Connect to Windows VM
-    #   run: |
-    #       $username = "Administrator"
-    #       $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)" | ConvertTo-SecureString -AsPlainText -Force
-    #       $credential = New-Object System.Management.Automation.PSCredential($username, $password)
-    #       Enter-PSSession -ComputerName 34.244.15.14 -Credential $credential  
-    #     # $myUserName = "Administrator"
-    #     # $myPlainTextPassword = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)"
-    #     # $myPassword = $MyPlainTextPassword | ConvertTo-SecureString -AsPlainText -Force
-    #     # $credential = New-Object System.Management.Automation.PSCredential($MyUserName, $myPassword)
-    #     # $networkCredential = $credential.GetNetworkCredential()
-    #     # $networkCredential | Select-Object UserName, Password
-    #     # $ipAddress = "34.244.15.14"
-    #     # $sessionOption = New-PSSessionOption `
-    #     # -SkipCACheck `
-    #     # -SkipCNCheck `
-    #     # -SkipRevocationCheck
-    #     # $psSession = @{
-    #     #   ComputerName = $ipAddress
-    #     #   UseSSL = $true
-    #     #   Credential = $credential
-    #     #   SessionOption = $sessionOption
-    #     # }
-    #     # Enter-PSSession @psSession
+      # - name: Remove temporary files for WebAPI
+      #   run: Remove-Item -Path ${{ github.workspace }}\_webapi_build -Recurse -Force
