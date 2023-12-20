@@ -21,7 +21,8 @@ jobs:
             $username = "Administrator"
             $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)" | ConvertTo-SecureString -AsPlainText -Force
             $credential = New-Object System.Management.Automation.PSCredential($username, $password)
-            Enter-PSSession -ComputerName 34.244.15.14 -Credential $credential  
+            # Enter-PSSession -ComputerName 34.244.15.14 -Credential $credential  
+            Invoke-Command -ComputerName 34.244.15.14 -ScriptBlock { hostname } -credential $credential
 
 # name: resusable-workflow-ubuntu
 
