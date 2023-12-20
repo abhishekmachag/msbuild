@@ -73,24 +73,21 @@ jobs:
               $psSession = New-PSSession -ComputerName 34.244.15.14 -Credential $credential
               Copy-Item "${{ github.workspace }}/_build" -Destination "C:\" -ToSession $psSession -Recurse -Force
               Exit-PSSession
+              
       - name: Remove PowerShell build
         run: |
-              $username = "Administrator"
-              $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)" | ConvertTo-SecureString -AsPlainText -Force
-              $credential = New-Object System.Management.Automation.PSCredential($username, $password)
-              $psSession = Enter-PSSession -ComputerName 34.244.15.14 -Credential $credential
-              
-              # Perform actions in the remote session
-              Invoke-Command -ScriptBlock {
-                  # Change directory to C:\ drive
-                  Set-Location -Path "C:\"
-              
-                  # Remove the "YourFolder" folder recursively
-                  Remove-Item -Path "_build" -Recurse -Force
-              }
-              
-              # Exit the remote session
-              Exit-PSSession
+          $username = "Administrator"
+          $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)" | ConvertTo-SecureString -AsPlainText -Force
+          $credential = New-Object System.Management.Automation.PSCredential($username, $password)
+      
+          # Perform actions in the remote session
+          Invoke-Command -ComputerName 34.244.15.14 -Credential $credential -ScriptBlock {
+              # Change directory to C:\ drive
+              Set-Location -Path "C:\"
+          
+              # Remove the "_build" folder recursively
+              Remove-Item -Path "_build" -Recurse -Force
+          }
 # name: resusable-workflow-ubuntu
 
 # on:
