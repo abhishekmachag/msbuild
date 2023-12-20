@@ -6,62 +6,62 @@ on:
   workflow_call:
   workflow_dispatch:
 jobs:
-  build:
-    runs-on: windows-2019
-    env:
-      BUILD_PATH: ${{ github.workspace }}\_build
-    steps:
-    - name: Checkout First1 Repository
-      uses: actions/checkout@v3
-      with:
-        repository: abhishekmachag/msbuild
-        ref: master
-        path: ${{ github.workspace }}/msbuild
+  # build:
+  #   runs-on: windows-2019
+  #   env:
+  #     BUILD_PATH: ${{ github.workspace }}\_build
+  #   steps:
+  #   - name: Checkout First1 Repository
+  #     uses: actions/checkout@v3
+  #     with:
+  #       repository: abhishekmachag/msbuild
+  #       ref: master
+  #       path: ${{ github.workspace }}/msbuild
         
-    - run: Get-ChildItem
+  #   - run: Get-ChildItem
     
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v1
+  #   - name: Setup MSBuild
+  #     uses: microsoft/setup-msbuild@v1
     
-    - name: Setup NuGet
-      uses: NuGet/setup-nuget@v1  
+  #   - name: Setup NuGet
+  #     uses: NuGet/setup-nuget@v1  
   
-    - name: Restore NuGet packages with msbuild
-      working-directory: ${{ github.workspace }}\msbuild
-      run: nuget restore EFContextMock.sln
+  #   - name: Restore NuGet packages with msbuild
+  #     working-directory: ${{ github.workspace }}\msbuild
+  #     run: nuget restore EFContextMock.sln
       
-    - name: Build with msbuild
-      working-directory: ${{ github.workspace }}\msbuild
-      run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true /p:PublishProfile=Publish /p:PublishUrl="${{ env.BUILD_PATH }}" /p:VersionSuffix="${{ github.run_number }}" /p:IsPackaging=true
+  #   - name: Build with msbuild
+  #     working-directory: ${{ github.workspace }}\msbuild
+  #     run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true /p:PublishProfile=Publish /p:PublishUrl="${{ env.BUILD_PATH }}" /p:VersionSuffix="${{ github.run_number }}" /p:IsPackaging=true
 
-    - name: Compress Web Build artifact
-      run: Compress-Archive -Path "${{ env.BUILD_PATH }}" -DestinationPath "${{ env.BUILD_PATH }}.zip" 
+  #   - name: Compress Web Build artifact
+  #     run: Compress-Archive -Path "${{ env.BUILD_PATH }}" -DestinationPath "${{ env.BUILD_PATH }}.zip" 
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: Artifacts
-        path: "${{ env.BUILD_PATH }}.zip"    
+  #   - name: Upload artifact
+  #     uses: actions/upload-artifact@v3
+  #     with:
+  #       name: Artifacts
+  #       path: "${{ env.BUILD_PATH }}.zip"    
 
 
   deploy:
     runs-on: windows-2019
-    needs: build
+    # needs: build
     steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: Artifacts
-          path: ${{ github.workspace }}/build
+      # - name: Download artifact
+      #   uses: actions/download-artifact@v3
+      #   with:
+      #     name: Artifacts
+      #     path: ${{ github.workspace }}/build
 
-      - name: Expand Build artifact
-        run: Expand-Archive -Path "${{ github.workspace }}\build\_build.zip" -DestinationPath "${{ github.workspace }}\build" -Force
+      # - name: Expand Build artifact
+      #   run: Expand-Archive -Path "${{ github.workspace }}\build\_build.zip" -DestinationPath "${{ github.workspace }}\build" -Force
         
       - name: PowerShell Session to Copy Build
         run: |
               Enable-PSRemoting -Force
-              Set-Item WSMan:\localhost\Client\TrustedHosts -Value "34.244.15.14" -Force
-              # set-item WSMan:\localhost\Client\TrustedHosts "*"
+              # Set-Item WSMan:\localhost\Client\TrustedHosts -Value "34.244.15.14" -Force
+              set-item WSMan:\localhost\Client\TrustedHosts "*"
               $username = "Administrator"
               $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)"
               $securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
@@ -71,8 +71,8 @@ jobs:
               Copy-Item "${{ github.workspace }}/build/_build/*" -Destination "C:\temp" -ToSession $psSession -Recurse -Force
               Exit-PSSession
 
-      - name: Remove temporary files
-        run: Remove-Item -Path ${{ github.workspace }}/build -Recurse -Force
+      # - name: Remove temporary files
+      #   run: Remove-Item -Path ${{ github.workspace }}/build -Recurse -Force
               
       # - name: Deploying tthe Build Artifacts to Root Directory
       #   run: |
