@@ -1,48 +1,96 @@
-name: Run PowerShell Script
+name: resusable-workflow-ubuntu
 
 on:
   push:
-    branches:
-      - master
-
+    branches: ["master"]
+  workflow_call:
+  workflow_dispatch:
 jobs:
-  run_script:
+  build:
     runs-on: windows-2019
-
+    env:
+      BUILD_PATH: ${{ github.workspace }}\_build
     steps:
-    - run: whoami
-    - run: hostname
-    - name: Run PowerShell Script
-      # shell: powershell
-      run: |
-            Enable-PSRemoting -Force
-            Set-Item WSMan:\localhost\Client\TrustedHosts -Value "34.244.15.14" -Force
-            # set-item WSMan:\localhost\Client\TrustedHosts "*"
-            $username = "Administrator"
-            $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)"
-            $securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
-            $credential = New-Object System.Management.Automation.PSCredential($username, $securePassword)
-            $psSession = New-PSSession -ComputerName 34.244.15.14 -Credential $credential
-            Copy-Item "C:\folder" -Destination "C:\" -ToSession $psSession -Recurse -Force
-            Exit-PSSession
-    - name: Remove PowerShell build
-      run: |
-            $username = "Administrator"
-            $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)" | ConvertTo-SecureString -AsPlainText -Force
-            $credential = New-Object System.Management.Automation.PSCredential($username, $password)
-            $psSession = Enter-PSSession -ComputerName 34.244.15.14 -Credential $credential
-            
-            # Perform actions in the remote session
-            Invoke-Command -ScriptBlock {
-                # Change directory to C:\ drive
-                Set-Location -Path "C:\"
-            
-                # Remove the "YourFolder" folder recursively
-                Remove-Item -Path "folder" -Recurse -Force
-            }
-            
-            # Exit the remote session
-            Exit-PSSession
+    - name: Checkout First1 Repository
+      uses: actions/checkout@v3
+      with:
+        repository: abhishekmachag/msbuild
+        ref: master
+        path: ${{ github.workspace }}/msbuild
+ 
+    - run: Get-ChildItem
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1
+    
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1  
+  
+    - name: Restore NuGet packages with msbuild
+      working-directory: ${{ github.workspace }}\msbuild
+      run: nuget restore EFContextMock.sln
+    
+      
+    - name: Build with msbuild
+      working-directory: ${{ github.workspace }}\msbuild
+      run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true /p:PublishProfile=Publish /p:PublishUrl="${{ env.BUILD_PATH }}" /p:VersionSuffix="${{ github.run_number }}" /p:IsPackaging=true
+
+
+    - name: Compress Web Build artifact
+      run: Compress-Archive -Path "${{ env.BUILD_PATH }}" -DestinationPath "${{ env.BUILD_PATH }}.zip" 
+
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Artifacts
+        path: "${{ env.BUILD_PATH }}.zip"    
+
+
+  deploy:
+    runs-on: windows-2019
+    needs: build
+    steps:
+    
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: Artifacts
+          path: ${{ github.workspace }}/_build
+          
+      - run: whoami
+      - run: hostname
+      - name: Run PowerShell Script
+        # shell: powershell
+        run: |
+              Enable-PSRemoting -Force
+              Set-Item WSMan:\localhost\Client\TrustedHosts -Value "34.244.15.14" -Force
+              # set-item WSMan:\localhost\Client\TrustedHosts "*"
+              $username = "Administrator"
+              $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)"
+              $securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
+              $credential = New-Object System.Management.Automation.PSCredential($username, $securePassword)
+              $psSession = New-PSSession -ComputerName 34.244.15.14 -Credential $credential
+              Copy-Item "${{ github.workspace }}/_build" -Destination "C:\" -ToSession $psSession -Recurse -Force
+              Exit-PSSession
+      - name: Remove PowerShell build
+        run: |
+              $username = "Administrator"
+              $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)" | ConvertTo-SecureString -AsPlainText -Force
+              $credential = New-Object System.Management.Automation.PSCredential($username, $password)
+              $psSession = Enter-PSSession -ComputerName 34.244.15.14 -Credential $credential
+              
+              # Perform actions in the remote session
+              Invoke-Command -ScriptBlock {
+                  # Change directory to C:\ drive
+                  Set-Location -Path "C:\"
+              
+                  # Remove the "YourFolder" folder recursively
+                  Remove-Item -Path "_build" -Recurse -Force
+              }
+              
+              # Exit the remote session
+              Exit-PSSession
 # name: resusable-workflow-ubuntu
 
 # on:
