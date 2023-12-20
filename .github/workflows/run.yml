@@ -84,12 +84,12 @@ jobs:
     #     Remove-PSSession -Name "RemoteSession"
 # Set the connection details
     - run: whoami
-    # - name: Connect to Windows VM
-    #   run: |
-    #       $username = "Administrator"
-    #       $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)" | ConvertTo-SecureString -AsPlainText -Force
-    #       $credential = New-Object System.Management.Automation.PSCredential($username, $password)
-    #       Enter-PSSession -ComputerName 34.244.15.14 -Credential $credential  
+    - name: Connect to Windows VM
+      run: |
+          $username = "Administrator"
+          $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)" | ConvertTo-SecureString -AsPlainText -Force
+          $credential = New-Object System.Management.Automation.PSCredential($username, $password)
+          Enter-PSSession -ComputerName 34.244.15.14 -Credential $credential  
     #     # $myUserName = "Administrator"
     #     # $myPlainTextPassword = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)"
     #     # $myPassword = $MyPlainTextPassword | ConvertTo-SecureString -AsPlainText -Force
