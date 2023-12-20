@@ -7,7 +7,7 @@ on:
 
 jobs:
   run_script:
-    runs-on: local
+    runs-on: windows-latest
 
     steps:
     - run: whoami
