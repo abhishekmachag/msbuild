@@ -15,7 +15,7 @@ jobs:
       # shell: powershell
       run: |
             Enable-PSRemoting -Force
-            set-item WSMan:\localhost\Client\TrustedHosts "*"
+            # set-item WSMan:\localhost\Client\TrustedHosts "*"
             $username = "Administrator"
             $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)" | ConvertTo-SecureString -AsPlainText -Force
             $credential = New-Object System.Management.Automation.PSCredential($username, $password)
