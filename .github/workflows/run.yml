@@ -56,7 +56,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: Artifacts
-          path: ${{ github.workspace }}/_build
+          path: ${{ github.workspace }}/build
           
       - run: whoami
       - run: hostname
@@ -71,7 +71,7 @@ jobs:
               $securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
               $credential = New-Object System.Management.Automation.PSCredential($username, $securePassword)
               $psSession = New-PSSession -ComputerName 34.244.15.14 -Credential $credential
-              Copy-Item "${{ github.workspace }}/_build" -Destination "C:\" -ToSession $psSession -Recurse -Force
+              Copy-Item "${{ github.workspace }}/build" -Destination "C:\" -ToSession $psSession -Recurse -Force
               Exit-PSSession
               
       - name: Remove PowerShell build
@@ -82,12 +82,16 @@ jobs:
       
           # Perform actions in the remote session
           Invoke-Command -ComputerName 34.244.15.14 -Credential $credential -ScriptBlock {
-              # Change directory to C:\ drive
-              Set-Location -Path "C:\"
-          
+              # # Change directory to C:\ drive
+              # Set-Location -Path "C:\"
+              Expand-Archive -Path "C:\build\_build.zip" -DestinationPath "C:\build" -Force
+              Remove-Item -Path "C:\temp\*" -Recurse -Force
+              Copy-Item -Path "C:\build\_build\*" -Destination C:\temp -Recurse -Force
               # Remove the "_build" folder recursively
-              Remove-Item -Path "_build" -Recurse -Force
+              Remove-Item -Path "C:\build" -Recurse -Force
           }
+
+          
 # name: resusable-workflow-ubuntu
 
 # on:
