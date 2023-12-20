@@ -10,11 +10,8 @@ jobs:
     runs-on: local
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
     - name: Run PowerShell Script
-      shell: pwsh
+      shell: powershell
       run: |
         $username = "Administrator"
         $password = "YourAdminPassword" | ConvertTo-SecureString -AsPlainText -Force
