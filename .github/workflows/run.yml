@@ -1,12 +1,40 @@
-
-name: resusable-workflow-ubuntu
+name: Run PowerShell Script
 
 on:
   push:
-    branches: ["master"]
-  workflow_call:
-  workflow_dispatch:
+    branches:
+      - master
+
 jobs:
+  run_script:
+    runs-on: local
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Run PowerShell Script
+      shell: pwsh
+      run: |
+        $username = "Administrator"
+        $password = "YourAdminPassword" | ConvertTo-SecureString -AsPlainText -Force
+        $credential = New-Object System.Management.Automation.PSCredential($username, $password)
+
+        $scriptBlock = {hostname}
+
+        Invoke-Command -ScriptBlock $scriptBlock -Credential $credential -ComputerName 34.244.15.14
+
+
+
+
+# name: resusable-workflow-ubuntu
+
+# on:
+#   push:
+#     branches: ["master"]
+#   workflow_call:
+#   workflow_dispatch:
+# jobs:
   # build:
   #   runs-on: windows-2019
   #   # permissions:
@@ -55,10 +83,10 @@ jobs:
     #     path: "${{ env.BUILD_PATH }}.zip"    
 
 
-  deploy:
-    runs-on: local
-    # needs: build
-    steps:
+  # deploy:
+  #   runs-on: local
+  #   # needs: build
+  #   steps:
     
       # - name: Download artifact
       #   uses: actions/download-artifact@v3
@@ -83,13 +111,13 @@ jobs:
     #     Copy-Item -Path "${{ github.workspace }}/downloaded-artifact/*" -Destination "\\$serverAddress\$destinationPath" -Recurse -ToSession (Get-PSSession -Name "RemoteSession")
     #     Remove-PSSession -Name "RemoteSession"
 # Set the connection details
-    - run: whoami
-    - name: Connect to Windows VM
-      run: |
-          $username = "Administrator"
-          $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)" | ConvertTo-SecureString -AsPlainText -Force
-          $credential = New-Object System.Management.Automation.PSCredential($username, $password)
-          Enter-PSSession -ComputerName 34.244.15.14 -Credential $credential  
+    # - run: whoami
+    # - name: Connect to Windows VM
+    #   run: |
+    #       $username = "Administrator"
+    #       $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)" | ConvertTo-SecureString -AsPlainText -Force
+    #       $credential = New-Object System.Management.Automation.PSCredential($username, $password)
+    #       Enter-PSSession -ComputerName 34.244.15.14 -Credential $credential  
     #     # $myUserName = "Administrator"
     #     # $myPlainTextPassword = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)"
     #     # $myPassword = $MyPlainTextPassword | ConvertTo-SecureString -AsPlainText -Force
