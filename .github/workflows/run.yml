@@ -7,7 +7,7 @@ on:
 
 jobs:
   run_script:
-    runs-on: local
+    runs-on: windows-2019
 
     steps:
     - run: whoami
@@ -18,12 +18,30 @@ jobs:
             Enable-PSRemoting -Force
             Set-Item WSMan:\localhost\Client\TrustedHosts -Value "34.244.15.14" -Force
             # set-item WSMan:\localhost\Client\TrustedHosts "*"
+            $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)"
+            $securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
+            $credential = New-Object System.Management.Automation.PSCredential($username, $securePassword)
+            $psSession = New-PSSession -ComputerName 34.244.15.14 -Credential $credential
+            Copy-Item "C:\folder" -Destination "C:\" -ToSession $psSession -Recurse -Force
+            Exit-PSSession
+    - name: Remove PowerShell build
+      run: |
             $username = "Administrator"
             $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)" | ConvertTo-SecureString -AsPlainText -Force
             $credential = New-Object System.Management.Automation.PSCredential($username, $password)
-            # Enter-PSSession -ComputerName 34.244.15.14 -Credential $credential  
-            Invoke-Command -ComputerName 34.244.15.14 -ScriptBlock { hostname } -credential $credential
-
+            $psSession = Enter-PSSession -ComputerName 34.244.15.14 -Credential $credential
+            
+            # Perform actions in the remote session
+            Invoke-Command -ScriptBlock {
+                # Change directory to C:\ drive
+                Set-Location -Path "C:\"
+            
+                # Remove the "YourFolder" folder recursively
+                Remove-Item -Path "folder" -Recurse -Force
+            }
+            
+            # Exit the remote session
+            Exit-PSSession
 # name: resusable-workflow-ubuntu
 
 # on:
