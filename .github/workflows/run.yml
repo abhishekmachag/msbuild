@@ -10,8 +10,9 @@ jobs:
     runs-on: local
 
     steps:
+    - run: whoami
     - name: Run PowerShell Script
-      shell: powershell
+      # shell: powershell
       run: |
             $username = "Administrator"
             $password = "6ppr0KasqshE8qDIMF9WdTz=IUBC.3-)" | ConvertTo-SecureString -AsPlainText -Force
