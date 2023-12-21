@@ -83,9 +83,9 @@ jobs:
   
           # Perform actions in the remote session
           Invoke-Command -ComputerName 34.244.15.14 -Credential $credential -ScriptBlock {
-              Remove-Item -Path "C:\inetpub\wwwroot\msbuild*" -Recurse -Force
+              Remove-Item -Path "C:\inetpub\wwwroot\msbuild\*" -Recurse -Force
                Copy-Item -Path "C:\inetpub\wwwroot\msbuild_temp\*" -Destination "C:\inetpub\wwwroot\msbuild" -Recurse -Force
-               Remove-Item -Path "C:\inetpub\wwwroot\msbuild_temp*" -Recurse -Force
+               Remove-Item -Path "C:\inetpub\wwwroot\msbuild_temp" -Recurse -Force
           }
 
           
