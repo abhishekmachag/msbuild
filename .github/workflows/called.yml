@@ -2,15 +2,17 @@ name: caller workflow
 
 on:
   workflow_call:
+    inputs:
+      target-env:
 
 jobs:
   deploy:
-    name: Deploy to dev
+    name: ${{ inputs.target-env }}
     permissions:
       contents: none
     runs-on: windows-2019
     environment:
-      name: dev
+      name: ${{ inputs.target-env }}
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v3
