@@ -1,8 +1,8 @@
-name: resusable-workflow-ubuntu
+name: deploy in windows
 
 on: 
-  push:
-    branches: ["master"]
+  # push:
+  #   branches: ["master"]
   workflow_call:
   workflow_dispatch:
 jobs:
