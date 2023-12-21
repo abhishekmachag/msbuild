@@ -1,0 +1,53 @@
+name: caller-Main
+
+on:
+  # push:
+  #   branches:
+  #     - master
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select environment (dev or prod)'
+        # description: 'Select environment (dev)'
+        required: true
+        default: 'dev'
+        type: environment
+
+jobs:
+  build:
+    runs-on: windows-2019
+    permissions:
+      packages: write
+      contents: read
+    if: ${{ github.event.inputs.environment == 'dev' }}
+    env:
+      BUILD_PATH: ${{ github.workspace }}\_build
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1
+    
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1  
+  
+
+    - name: Restore NuGet packages with msbuild
+      working-directory: ${{ github.workspace }}
+      run: nuget restore EFContextMock.sln
+    
+      
+    - name: Build with msbuild
+      working-directory: ${{ github.workspace }}
+      run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true /p:PublishProfile=Publish /p:PublishUrl="${{ env.BUILD_PATH }}" /p:VersionSuffix="${{ github.run_number }}"
+
+
+    - name: Compress Web Build artifact
+      run: Compress-Archive -Path "${{ env.BUILD_PATH }}" -DestinationPath "${{ env.BUILD_PATH }}.zip" 
+
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Artifacts
+        path: "${{ env.BUILD_PATH }}.zip"     
