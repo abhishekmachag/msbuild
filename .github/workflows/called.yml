@@ -17,6 +17,7 @@ jobs:
       name: ${{ inputs.target-env }}
     steps:
       - name: Download artifact from build job
+        if:  inputs.target-env == 'dev'
         uses: actions/download-artifact@v3
         with:
           name: Artifacts
