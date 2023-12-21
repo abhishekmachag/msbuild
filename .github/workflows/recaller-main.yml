@@ -51,3 +51,14 @@ jobs:
       with:
         name: Artifacts
         path: "${{ env.BUILD_PATH }}.zip"     
+
+  ReuseableMatrixJobForDeployment:
+    needs: build
+    strategy:
+      fail-fast: true
+      matrix:
+        target: [dev, prod ]
+    uses: ./.github/workflows/called.yml
+    with:
+      target-env: ${{ matrix.target }}
+    secrets: inherit
