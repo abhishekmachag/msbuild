@@ -1,0 +1,19 @@
+name: caller workflow
+
+on:
+  workflow_call:
+
+jobs:
+  deploy:
+    name: Deploy to dev
+    permissions:
+      contents: none
+    runs-on: windows-2019
+    environment:
+      name: dev
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
+        with:
+          name: Artifacts
+          path: "${{ env.BUILD_PATH }}.zip"  
