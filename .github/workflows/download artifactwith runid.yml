@@ -16,7 +16,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    steps:
+    steps: 
       # - name: Get Artifact ID
       #   run: |
       #     # Replace 'Your Organization' and 'Your Repository' with your actual organization and repository name
