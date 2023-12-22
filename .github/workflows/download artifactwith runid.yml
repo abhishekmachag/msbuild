@@ -1,29 +1,35 @@
 name: Download Artifact
 
 on:
-  # push:
-  #   branches:
-  #     - main
+  push:
+    branches:
+      - master
   workflow_dispatch:
-    inputs:
-      run_id:
-        description: 'Specify the run ID'
-        required: true
-
+    # inputs:
+    #   buildnumber:
+    #     # description: 'Select environment (dev or prod)'
+    #     description: 'Select buildno '
+    #     required: true
+        # default: 'dev'
+        # type: environment
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Get Artifact ID
-        run: |
-          RUN_ID=${{ github.event.inputs.run_id }}
-          ARTIFACT_ID=$(curl -s -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
-                       "https://api.github.com/repos/abhishekmachag/msbuild/actions/runs/$RUN_ID/artifacts" \
-                       | jq -r '.artifacts[0].id')
-          echo "Artifact ID for run $RUN_ID: $ARTIFACT_ID"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps: 
+      # - name: Get Artifact ID
+      #   run: |
+      #     # Replace 'Your Organization' and 'Your Repository' with your actual organization and repository name
+      #     # Replace 'Your Workflow Name' with the name of your workflow
+      #     # Replace 'Your Run Number' with the specific run number for which you want to get the artifact ID
+          
+      #     RUN_ID=7152588810
+      #     ARTIFACT_ID=$(curl -s -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+      #                  "https://api.github.com/repos/abhishekmachag/msbuild/actions/runs/$RUN_ID/artifacts" \
+      #                  | jq -r '.artifacts[0].id')
+      #     echo "Artifact ID for run $RUN_ID: $ARTIFACT_ID"
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: Download Artifact
         run: |
@@ -31,13 +37,12 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
-            https://api.github.com/repos/abhishekmachag/msbuild/actions/artifacts/$ARTIFACT_ID/zip -o artifacts.zip
+            https://api.github.com/repos/abhishekmachag/msbuild/actions/artifacts/1103736761/zip -o artifacts.zip
       - name: List Artifact
         run: ls
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: my-artifact
           path: ./artifacts.zip
-
