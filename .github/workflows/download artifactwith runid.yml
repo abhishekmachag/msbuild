@@ -14,7 +14,7 @@ on:
         # type: environment
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubunt
 
     steps: 
       # - name: Get Artifact ID
