@@ -61,30 +61,30 @@ jobs:
       
     - name: Build with msbuild
       working-directory: ${{ github.workspace }}
-      run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true /p:PublishProfile=Publish /p:PublishUrl="${{ env.BUILD_PATH }}" /p:VersionSuffix="${{ github.run_number }}"
+      run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true /p:PublishProfile=Publish /p:PublishUrl="${{ env.BUILD_PATH }}" /p:VersionSuffix="${{ github.run_id }}":"${{ github.run_number }}"
 
 
-    - name: Compress Web Build artifact
-      run: Compress-Archive -Path "${{ env.BUILD_PATH }}" -DestinationPath "${{ env.BUILD_PATH }}.zip" 
+    # - name: Compress Web Build artifact
+    #   run: Compress-Archive -Path "${{ env.BUILD_PATH }}" -DestinationPath "${{ env.BUILD_PATH }}.zip" 
 
 
-    - name: Upload artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: Artifacts
-        path: "${{ env.BUILD_PATH }}.zip"     
+  #   - name: Upload artifact
+  #     uses: actions/upload-artifact@v3
+  #     with:
+  #       name: Artifacts
+  #       path: "${{ env.BUILD_PATH }}.zip"     
         
-    - run: Get-ChildItem
+  #   - run: Get-ChildItem
     
-  Deploy-to-IIS-Server:
-    runs-on: local
-    needs: build
-    environment:
-      name: dev
+  # Deploy-to-IIS-Server:
+  #   runs-on: local
+  #   needs: build
+  #   environment:
+  #     name: dev
 
-    steps:
-    - name: Download artifact
-      uses: actions/download-artifact@v3
-      with:
-        name: Artifacts
-        path: ${{ github.workspace }}/_build
+  #   steps:
+  #   - name: Download artifact
+  #     uses: actions/download-artifact@v3
+  #     with:
+  #       name: Artifacts
+  #       path: ${{ github.workspace }}/_build
