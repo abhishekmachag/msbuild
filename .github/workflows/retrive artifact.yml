@@ -2,10 +2,10 @@ name: Download and Upload Artifact
 
 on:
   workflow_dispatch:
-    inputs:
-      run_id:
-        description: 'Enter the run ID for the workflow'
-        required: true
+    # inputs:
+    #   run_id:
+    #     description: 'Enter the run ID for the workflow'
+    #     required: true
 
 
 jobs:
