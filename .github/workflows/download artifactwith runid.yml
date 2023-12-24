@@ -1,9 +1,9 @@
 name: Download Artifact
 
 on:
-  push:
-    branches:
-      - master
+  # push:
+  #   branches:
+  #     - master
   workflow_dispatch:
     # inputs:
     #   buildnumber:
@@ -14,7 +14,7 @@ on:
         # type: environment
 jobs:
   build:
-    runs-on: ubunt
+    runs-on: ubuntu-latest
 
     steps: 
       # - name: Get Artifact ID
