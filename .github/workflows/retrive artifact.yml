@@ -19,8 +19,8 @@ jobs:
         run_number=${{ github.run_number }}
         response=$(curl -s \
           -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-          "https://api.github.com/repos/${{ github.repository }}/actions/runs/${run_number}/artifacts")
+          -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+          "https://api.github.com/repos/msbuild/actions/runs/${run_number}/artifacts")
     
             artifact_id=$(echo $response | jq -r '.artifacts[0].id')
             echo "Artifact ID: $artifact_id"
