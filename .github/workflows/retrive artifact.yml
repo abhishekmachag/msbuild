@@ -20,7 +20,7 @@ jobs:
                        "https://api.github.com/repos/abhishekmachag/msbuild/actions/runs?event=workflow_dispatch" \
                        | jq --arg run_number "$RUN_NUMBER" -r '.workflow_runs[] | select(.run_number == $run_number) | .id')
           echo "Run ID for run number $RUN_NUMBER: $RUN_ID"
-          echo "::set-output name=run_id::$RUN_ID"
+          # echo "::set-output name=run_id::$RUN_ID"
 
       # Add more steps as needed, using ${{ steps.get_run_id.outputs.run_id }} to access the run_id
 
