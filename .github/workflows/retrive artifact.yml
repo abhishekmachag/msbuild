@@ -12,8 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      COMMIT_SHA: ''
-      BRANCH_NAME: ''
+      BRANCH_NAME: 'master'
 
     steps:
       - name: Retrieve build information
@@ -21,13 +20,12 @@ jobs:
         run: |
           api_url="https://api.github.com/repos/abhishekmachag/msbuild/actions/runs/${{ github.event.inputs.run_number }}"
           response=$(curl -sSL -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" "$api_url")
-          echo "COMMIT_SHA=${response | jq -r '.head_commit.id'}" >> $GITHUB_ENV
-          echo "BRANCH_NAME=${response | jq -r '.head_branch'}" >> $GITHUB_ENV
+          echo "BRANCH_NAME=$(echo "$response" | jq -r '.head_branch')" >> $GITHUB_ENV
 
-      - name: Checkout specific commit
-        uses: actions/checkout@v2
+      - name: Checkout specific branch
+        uses: actions/checkout@v3
         with:
-          ref: ${{ env.COMMIT_SHA }}
+          ref: ${{ env.BRANCH_NAME }}
 
       - name: Archive build as artifact
         uses: actions/upload-artifact@v3
