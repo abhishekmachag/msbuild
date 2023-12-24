@@ -13,14 +13,21 @@ jobs:
 
     steps: 
       - name: Get Artifact ID
+        id: get_artifact_id
         run: |
           RUN_ID=${{ github.event.inputs.run_id }}
           ARTIFACT_ID=$(curl -s -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
                        "https://api.github.com/repos/abhishekmachag/msbuild/actions/runs/$RUN_ID/artifacts" \
                        | jq -r '.artifacts[0].id')
           echo "Artifact ID for run $RUN_ID: $ARTIFACT_ID"
+          echo "::set-output name=artifact_id::$ARTIFACT_ID"
 
-
+      - name: Use Artifact ID
+        run: |
+          # Now you can use the artifact_id in subsequent steps
+          ARTIFACT_ID=${{ steps.get_artifact_id.outputs.artifact_id }}
+          echo "Using Artifact ID: $ARTIFACT_ID"
+          # Add your commands here that use the artifact ID
 
 
 
