@@ -1,60 +1,30 @@
-name: Download and Upload Artifact
+name: GetUserInputPipeline-download-artifact
 
 on:
   workflow_dispatch:
-    # inputs:
-    #   run_id:
-    #     description: 'Enter the run ID for the workflow'
-    #     required: true
-
+    inputs:
+      artifact_id:
+        description: 'Artifact ID to download'
+        required: true
 
 jobs:
-  get_artifact_id:
-    runs-on: ubuntu-latest
+  download-artifact:
+    runs-on: windows-latest  # Change this line to use a Windows runner
 
     steps:
-      - name: Output Run ID
-        run: echo ${{ github.run_id }}
-      - name: Output Run Number
-        run: echo ${{ github.run_number }}
-      - name: Output Run Attempt
-        run: echo ${{ github.run_attempt }}
-      
-      
+      - name: Download Artifact
+        run: |
+          artifact_id=${{ github.event.inputs.artifact_id }}
+          curl -L `
+            -H "Accept: application/vnd.github+json" `
+            -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" `
+            -H "X-GitHub-Api-Version: 2022-11-28" `
+            "https://api.github.com/repos/abhishekmachag/msbuild/actions/artifacts/${artifact_id}/zip" -o artifacts.zip
+      - name: List Artifact Contents
+        run: ls
 
-
-
-        
-
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       - name: Get Artifact ID
-#         run: |
-#           RUN_ID=${{ github.event.inputs.run_id }}
-#           ARTIFACT_ID=$(curl -s -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
-#                        "https://api.github.com/repos/abhishekmachag/msbuild/actions/runs/$RUN_ID/artifacts" \
-#                        | jq -r '.artifacts[0].id')
-#           echo "Artifact ID for run $RUN_ID: $ARTIFACT_ID"
-#           echo "::set-output name=artifact_id::$ARTIFACT_ID"
-
-#       - name: Download Artifact
-#         run: |
-#           ARTIFACT_ID=${{ needs.get-artifact-id.outputs.artifact_id }}
-#           curl -L \
-#             -H "Accept: application/vnd.github+json" \
-#             -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
-#             -H "X-GitHub-Api-Version: 2022-11-28" \
-#             "https://api.github.com/repos/abhishekmachag/msbuild/actions/artifacts/$ARTIFACT_ID/zip" -o artifacts.zip
-
-#       - name: List Artifact
-#         run: ls
-
-#       - name: Upload Artifact
-#         uses: actions/upload-artifact@v3
-#         with:
-#           name: my-artifact
-#           path: ./artifacts.zip
-
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: my-artifact
+          path: ./artifacts.zip
