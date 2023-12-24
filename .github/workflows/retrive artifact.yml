@@ -1,34 +1,31 @@
-name: GetUserInputPipeline-retrieve-artifacts
+name: GetUserInputPipeline-download-artifact
 
 on:
   workflow_dispatch:
     inputs:
-      run_number:
-        description: 'Run number of the build to retrieve'
+      artifact_id:
+        description: 'Artifact ID to download'
         required: true
 
 jobs:
-  retrieve-build:
+  download-artifact:
     runs-on: ubuntu-latest
 
-    env:
-      BRANCH_NAME: 'master'
-
     steps:
-      - name: Retrieve build information
-        id: get_build
+      - name: Download Artifact
         run: |
-          api_url="https://api.github.com/repos/abhishekmachag/msbuild/actions/runs/${{ github.event.inputs.run_number }}"
-          response=$(curl -sSL -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" "$api_url")
-          echo "BRANCH_NAME=$(echo "$response" | jq -r '.head_branch')" >> $GITHUB_ENV
+          artifact_id=${{ github.event.inputs.artifact_id }}
+          curl -L \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/abhishekmachag/msbuild/actions/artifacts/${artifact_id}/zip" -o artifacts.zip
 
-      - name: Checkout specific branch
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ env.BRANCH_NAME }}
+      - name: List Artifact Contents
+        run: ls
 
-      - name: Archive build as artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: retrieved-build
-          path: artifacts
+          name: my-artifact
+          path: ./artifacts.zip
