@@ -16,14 +16,21 @@ jobs:
     - name: Get Artifact ID
       id: get_artifact_id
       run: |
-        run_number=${{ github.run_number }}
-        response=$(curl -s \
-          -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
-          "https://api.github.com/repos/msbuild/actions/runs/${run_number}/artifacts")
+        # run_number=${{ github.run_number }}
+        # response=$(curl -s \
+        #   -H "Accept: application/vnd.github+json" \
+        #   -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+        #   "https://api.github.com/repos/msbuild/actions/runs/${run_number}/artifacts")
     
-            artifact_id=$(echo $response | jq -r '.artifacts[0].id')
-            echo "Artifact ID: $artifact_id"
+        #     artifact_id=$(echo $response | jq -r '.artifacts[0].id')
+        #     echo "Artifact ID: $artifact_id"
+
+
+          # RUN_ID=7152588810
+          ARTIFACT_ID=$(curl -s -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+                       "https://api.github.com/repos/abhishekmachag/msbuild/actions/runs/${{ github.run_number }}/artifacts" \
+                       | jq -r '.artifacts[0].id')
+          echo "Artifact ID for run ${{ github.run_number }}: $ARTIFACT_ID"
             
       # - name: Download Artifact
       #   run: |
