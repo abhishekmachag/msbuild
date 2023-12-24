@@ -1,4 +1,4 @@
-name: GetUserInputPipeline-retrive-artifacts
+name: GetUserInputPipeline-retrieve-artifacts
 
 on:
   workflow_dispatch:
@@ -11,22 +11,23 @@ jobs:
   retrieve-build:
     runs-on: ubuntu-latest
 
-    steps:
-      # - name: Check out repository
-      #   uses: actions/checkout@v2
+    env:
+      COMMIT_SHA: ''
+      BRANCH_NAME: ''
 
+    steps:
       - name: Retrieve build information
         id: get_build
         run: |
           api_url="https://api.github.com/repos/abhishekmachag/msbuild/actions/runs/${{ github.event.inputs.run_number }}"
           response=$(curl -sSL -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" "$api_url")
-          echo "::set-output name=commit_sha::$(echo "$response" | jq -r '.head_commit.id')"
-          echo "::set-output name=branch::$(echo "$response" | jq -r '.head_branch')"
+          echo "COMMIT_SHA=${response | jq -r '.head_commit.id'}" >> $GITHUB_ENV
+          echo "BRANCH_NAME=${response | jq -r '.head_branch'}" >> $GITHUB_ENV
 
       - name: Checkout specific commit
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
         with:
-          ref: ${{ steps.get_build.outputs.commit_sha }}
+          ref: ${{ env.COMMIT_SHA }}
 
       - name: Archive build as artifact
         uses: actions/upload-artifact@v3
