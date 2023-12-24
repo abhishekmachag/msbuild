@@ -22,12 +22,21 @@ jobs:
           echo "Artifact ID for run $RUN_ID: $ARTIFACT_ID"
           echo "::set-output name=artifact_id::$ARTIFACT_ID"
 
-      - name: Use Artifact ID
+      - name: Download Artifact
         run: |
-          # Now you can use the artifact_id in subsequent steps
-          ARTIFACT_ID=${{ steps.get_artifact_id.outputs.artifact_id }}
-          echo "Using Artifact ID: $ARTIFACT_ID"
-          # Add your commands here that use the artifact ID
+          artifact_id=${{ steps.get_artifact_id.outputs.artifact_id }}
+          curl -L \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/abhishekmachag/msbuild/actions/artifacts/${artifact_id}/zip" -o artifacts.zip
+            
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: my-artifact
+          path: ./artifacts.zip
+
 
 
 
