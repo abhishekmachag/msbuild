@@ -3,41 +3,23 @@ name: GetUserInputPipeline-download-artifact
 on:
   workflow_dispatch:
     inputs:
-      run_number:
-        description: 'Run number of the build to retrieve'
+      artifact_id:
+        description: 'Artifact ID to download'
         required: true
 
 jobs:
-  get-artifact-id:
-    runs-on: ubuntu-latest
-
-    outputs:
-      id: artifact_id
-
-    steps:
-      - name: Set Artifact ID
-        id: set_artifact_id
-        run: |
-          RUN_ID=${{ github.event.inputs.run_number }}
-          ARTIFACT_ID=$(curl -s -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
-                       "https://api.github.com/repos/abhishekmachag/msbuild/actions/runs/$RUN_ID/artifacts" \
-                       | jq -r '.artifacts[0].id')
-          echo "artifact_id=${ARTIFACT_ID}" >> $GITHUB_ENV
-
   download-artifact:
-    needs: get-artifact-id
     runs-on: ubuntu-latest
 
     steps:
       - name: Download Artifact
         run: |
-          artifact_id=${{ needs.get-artifact-id.outputs.artifact_id }}
+          artifact_id=${{ github.event.inputs.artifact_id }}
           curl -L \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.GH_TOKEN }}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             "https://api.github.com/repos/abhishekmachag/msbuild/actions/artifacts/${artifact_id}/zip" -o artifacts.zip
-
       - name: List Artifact Contents
         run: ls
 
