@@ -13,27 +13,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Get Artifact ID
-      id: get_artifact
-      run: |
-        run_number="${{ github.event.workflow_run.id }}"
-        repository="msbuild"
-        token="${{ secrets.GH_TOKEN }}"
-        
-        # Get the list of artifacts for a specific run
-        artifacts_url="https://api.github.com/repos/$repository/actions/runs/$run_number/artifacts"
-        artifact_id=$(curl -sH "Authorization: Bearer $token" $artifacts_url | jq -r '.artifacts[0].id')
-
-        echo "Artifact ID for run $run_number: $artifact_id"
-        
-        echo "##[set-output name=artifact_id;]$artifact_id"
-
-    - name: Use Artifact ID
-      run: |
-        artifact_id="${{ steps.get_artifact.outputs.artifact_id }}"
-        echo "Using Artifact ID: $artifact_id"
-
-
+      - name: Output Run ID
+        run: echo ${{ github.run_id }}
+      - name: Output Run Number
+        run: echo ${{ github.run_number }}
+      - name: Output Run Attempt
+        run: echo ${{ github.run_attempt }}
+      
+      
 
 
 
