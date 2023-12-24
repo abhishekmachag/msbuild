@@ -20,8 +20,6 @@ jobs:
                        | jq -r '.artifacts[0].id')
           echo "Artifact ID for run $RUN_ID: $ARTIFACT_ID"
           echo "::set-output name=artifact_id::$ARTIFACT_ID"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: Download Artifact
         run: |
