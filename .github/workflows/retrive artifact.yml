@@ -9,7 +9,7 @@ on:
 
 jobs:
   download-artifact:
-    runs-on: windows-latest  # Change this line to use a Windows runner
+    runs-on: ubuntu-latest  # Change this line to use a Windows runner
 
     steps:
       - name: Download Artifact
