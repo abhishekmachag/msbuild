@@ -33,9 +33,9 @@ jobs:
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v1  
       
-    - name: Clean solution
-      working-directory: ${{ github.workspace }}
-      run: msbuild /t:clean
+    # - name: Clean solution
+    #   working-directory: ${{ github.workspace }}
+    #   run: msbuild /t:clean
       
     - name: Restore NuGet packages with msbuild
       working-directory: ${{ github.workspace }}
@@ -44,7 +44,7 @@ jobs:
       
     - name: Build with msbuild
       working-directory: ${{ github.workspace }}
-      run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true --no-restore --configuration Release" /p:VersionSuffix="${{ github.run_id }}":"${{ github.run_number }}"
+      run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true --no-restore --configuration Release"
 
 
     - name: 'Get Version'
