@@ -2,8 +2,9 @@ name: "Deploy to NuGet"
 
 on:
   push:
-    tags:
-    - 'v*'
+    branches:
+      - master
+  workflow_dispatch:
 
 env:
   # PROJECT_PATH: 'PasswordBoxMVVM/PasswordBoxMVVM.csproj'
