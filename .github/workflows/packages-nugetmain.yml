@@ -44,7 +44,7 @@ jobs:
       
     - name: Build with msbuild
       working-directory: ${{ github.workspace }}
-      run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true --no-restore --configuration Release
+      run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true  --configuration Release
 
 
     - name: 'Get Version'
@@ -53,7 +53,7 @@ jobs:
 
     - name: 'Pack project'
       working-directory: ${{ github.workspace }}
-      run: dotnet pack EFContextMock.sln --no-restore --no-build --configuration Release --include-symbols -p:PackageVersion=${{ steps.version.outputs.version-without-v }} --output ${{ env.PACKAGE_OUTPUT_DIRECTORY }}
+      run: msbuild EFContextMock.sln /t:Pack --no-build --configuration Release --include-symbols -p:PackageVersion=${{ steps.version.outputs.version-without-v }} --output ${{ env.PACKAGE_OUTPUT_DIRECTORY }}
 
     - name: 'Push package'
       run: dotnet nuget push ${{ env.PACKAGE_OUTPUT_DIRECTORY }}\*.nupkg -k ${{ secrets.GH_TOKEN }} -s ${{ env.NUGET_SOURCE_URL }}
