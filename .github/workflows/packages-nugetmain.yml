@@ -44,7 +44,7 @@ jobs:
       
     - name: Build with msbuild
       working-directory: ${{ github.workspace }}
-      run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true --no-restore --configuration Release"
+      run: msbuild.exe EFContextMock.sln /p:DeployOnBuild=true --no-restore --configuration Release
 
 
     - name: 'Get Version'
